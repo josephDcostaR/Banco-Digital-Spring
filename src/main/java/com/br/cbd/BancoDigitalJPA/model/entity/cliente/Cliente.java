@@ -3,6 +3,8 @@ package com.br.cbd.BancoDigitalJPA.model.entity.cliente;
 import java.util.List;
 
 import com.br.cbd.BancoDigitalJPA.model.entity.conta.Conta;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.time.LocalDate;
 
 import jakarta.persistence.Column;
@@ -13,8 +15,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "cliente") 
 public class Cliente {
 
     @Id
@@ -31,6 +35,7 @@ public class Cliente {
     private CategoriaCliente categoria;
 
 
+    @JsonIgnore
     @OneToMany(mappedBy = "cliente")
     private List<Conta> contas;
 

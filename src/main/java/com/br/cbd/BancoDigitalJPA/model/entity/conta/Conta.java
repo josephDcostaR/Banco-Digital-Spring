@@ -1,20 +1,28 @@
 package com.br.cbd.BancoDigitalJPA.model.entity.conta;
 
 import java.math.BigDecimal;
+import java.util.List;
 
+import com.br.cbd.BancoDigitalJPA.model.entity.cartao.Cartao;
 import com.br.cbd.BancoDigitalJPA.model.entity.cliente.Cliente;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "conta") 
 public class Conta {
 
     @Id
@@ -36,6 +44,11 @@ public class Conta {
 
     @Column(precision = 5, scale = 2)
     private BigDecimal taxaManutencaoRendimento;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "conta", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Cartao> cartoes;
+
 
     public Conta() {
         // Inicializando com zero para evitar NullPointerException
@@ -99,5 +112,16 @@ public class Conta {
     public void setCliente(Cliente cliente) {
         this.cliente = cliente;
     }
+
+    public List<Cartao> getCartoes() {
+        return cartoes;
+    }
+
+    public void setCartoes(List<Cartao> cartoes) {
+        this.cartoes = cartoes;
+    }
+
+    
+    
 
 }

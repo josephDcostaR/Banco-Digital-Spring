@@ -38,7 +38,7 @@ public class ClienteService {
         cliente.setNome(dadosCliente.nome());
         cliente.setCpf(dadosCliente.cpf());
         cliente.setData_Nascimento(dadosCliente.Data_Nascimento());
-        cliente.setAtivo(dadosCliente.ativo());
+        cliente.setAtivo(true);
         cliente.setCategoria(dadosCliente.categoria());
 
         return clienteRepository.save(cliente);

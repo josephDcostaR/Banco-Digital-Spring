@@ -2,14 +2,14 @@ package com.br.cbd.BancoDigitalJPA.services;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.br.cbd.BancoDigitalJPA.model.entity.cartao.Cartao;
+import com.br.cbd.BancoDigitalJPA.model.entity.cartao.TipoCartao;
 import com.br.cbd.BancoDigitalJPA.model.entity.cliente.Cliente;
-import com.br.cbd.BancoDigitalJPA.model.entity.cliente.DadosCliente;
 import com.br.cbd.BancoDigitalJPA.model.entity.conta.Conta;
 import com.br.cbd.BancoDigitalJPA.model.entity.conta.DadosConta;
 import com.br.cbd.BancoDigitalJPA.model.entity.conta.TipoConta;
@@ -28,32 +28,67 @@ public class ContaService {
     @Autowired
     private ClienteRepository clienteRepository;
 
-
     //Cria nova conta
-    public Conta salvarConta(DadosConta dadosConta) {
-        //Verifica se o cliente existe no banco
-        Cliente cliente = clienteRepository.findById(dadosConta.cliente())
-            .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado!"));
+    // public Conta salvarConta(DadosConta dadosConta) {
+    //     //Verifica se o cliente existe no banco
+    //     Cliente cliente = clienteRepository.findById(dadosConta.cliente())
+    //         .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado!"));
+    //     Conta conta = new Conta();
+    //     conta.setCliente(cliente);
+    //     conta.setCodigo(dadosConta.codigo());
+    //     conta.setSaldo(dadosConta.saldo());
+    //     conta.setAtiva(true);
+    //     conta.setTipo(dadosConta.tipo());
+    //     if (dadosConta.tipo() == TipoConta.CORRENTE) {
+    //         BigDecimal taxaManutencao = getTaxaManutencao(cliente);
+    //         conta.setTaxaManutencaoRendimento(taxaManutencao);
+    //     } else if (dadosConta.tipo() == TipoConta.POUPANCA) {
+    //         BigDecimal taxaRendimento = getTaxaRendimento(cliente);
+    //         conta.setTaxaManutencaoRendimento(taxaRendimento);
+    //     }else {
+    //         throw new IllegalArgumentException("Tipo de conta inválido");
+    //     }
+    //     return contaRepository.save(conta);   
+    // }
+
+   
+
+    public Conta salvarContaCorrente(DadosConta dadosConta) {
+        Cliente cliente = getClienteValido(dadosConta.cliente());
 
         Conta conta = new Conta();
-
         conta.setCliente(cliente);
         conta.setCodigo(dadosConta.codigo());
         conta.setSaldo(dadosConta.saldo());
-        conta.setAtiva(dadosConta.ativa());
-        conta.setTipo(dadosConta.tipo());
-       
-        if (dadosConta.tipo() == TipoConta.CORRENTE) {
-            BigDecimal taxaManutencao = getTaxaManutencao(cliente);
-            conta.setTaxaManutencaoRendimento(taxaManutencao);
-        } else if (dadosConta.tipo() == TipoConta.POUPANCA) {
-            BigDecimal taxaRendimento = getTaxaRendimento(cliente);
-            conta.setTaxaManutencaoRendimento(taxaRendimento);
-        }else {
-            throw new IllegalArgumentException("Tipo de conta inválido");
-        }
+        conta.setAtiva(true);
+        conta.setTipo(TipoConta.CORRENTE);
 
-        return contaRepository.save(conta);   
+        conta.setTaxaManutencaoRendimento(getTaxaManutencao(cliente));
+
+        return contaRepository.save(conta);
+    }
+
+    public Conta salvarContaPoupanca(DadosConta dadosConta) {
+        Cliente cliente = getClienteValido(dadosConta.cliente());
+
+        Conta conta = new Conta();
+        conta.setCliente(cliente);
+        conta.setCodigo(dadosConta.codigo());
+        conta.setSaldo(dadosConta.saldo());
+        conta.setAtiva(true);
+        conta.setTipo(TipoConta.POUPANCA);
+
+        conta.setTaxaManutencaoRendimento(getTaxaRendimento(cliente));
+
+        return contaRepository.save(conta);
+    } 
+
+    private BigDecimal getTaxaRendimento(Cliente cliente) {
+        return switch (cliente.getCategoria()){
+            case COMUM -> new BigDecimal("0.005"); //0,5%
+            case SUPER -> new BigDecimal("0.007"); //0,7%
+            case PREMIUM -> new BigDecimal("0.009"); //0,9%
+        };
     }
 
     private BigDecimal getTaxaManutencao(Cliente cliente) {
@@ -64,29 +99,43 @@ public class ContaService {
         };
     }
 
-    private BigDecimal getTaxaRendimento(Cliente cliente) {
-        return switch (cliente.getCategoria()){
-            case COMUM -> new BigDecimal("0.005"); //0,5%
-            case SUPER -> new BigDecimal("0.007"); //0,7%
-            case PREMIUM -> new BigDecimal("0.009"); //0,9%
-        };
+    private Cliente getClienteValido(Long idCliente){
+        return  clienteRepository.findById(idCliente)
+        .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado!"));
     }
 
-    //Lista contas
+ 
+
     public List<DadosConta> getContas() { 
-        return contaRepository.findAll().stream()
-            .map(conta -> new DadosConta(
-                    conta.getId(),
-                    conta.getCliente().getId(),
-                    conta.getCodigo(),
-                    conta.getSaldo(),
-                    conta.isAtiva(),
-                    conta.getTipo(),
-                    conta.getTaxaManutencaoRendimento()))
-            .collect(Collectors.toList());
+    if (contaRepository.count() == 0) {
+        throw new RuntimeException("Nenhum conta cadastrado no sistema!");
     }
+    return contaRepository.findAll().stream()
+        .map(conta -> {
+            // Mapeia os cartões para extrair os tipos
+            List<TipoCartao> tiposCartao = conta.getCartoes()
+                .stream()
+                .map(Cartao::getTipoCartao)  // Certifique-se de que o Cartao tem um método getTipoCartao()
+                .distinct()
+                .collect(Collectors.toList());
+
+            return new DadosConta(
+                conta.getId(),
+                conta.getCliente().getId(),
+                conta.getCodigo(),
+                conta.getSaldo(),
+                conta.isAtiva(),
+                conta.getTipo(),
+                conta.getTaxaManutencaoRendimento(),
+                tiposCartao   // Aqui você passa a lista de tipos dos cartões
+            );
+        })
+        .collect(Collectors.toList());
+    }
+
 
     //Consulta saldo da conta
+    @Transactional
     public BigDecimal getSaldo(Long id) {
         BigDecimal saldo = contaRepository.findSaldoById(id);
         if (saldo == null) {
@@ -191,15 +240,24 @@ public class ContaService {
     //Obtem detalhes de uma conta
     public DadosConta getByIdConta(Long id) {
         Conta conta = contaRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada!"));
+                .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada!"));
+        
+        // Mapeia os cartões para extrair os tipos, removendo duplicatas, se necessário
+        List<TipoCartao> tiposCartao = conta.getCartoes()
+                .stream()
+                .map(Cartao::getTipoCartao)  // Certifique-se de que o Cartao possui o método getTipoCartao()
+                .distinct()
+                .collect(Collectors.toList());
+    
         return new DadosConta(
-            conta.getId(),
-            conta.getCliente().getId(),
-            conta.getCodigo(),
-            conta.getSaldo(),
-            conta.isAtiva(),
-            conta.getTipo(),
-                conta.getTaxaManutencaoRendimento()
+                conta.getId(),
+                conta.getCliente().getId(),
+                conta.getCodigo(),
+                conta.getSaldo(),
+                conta.isAtiva(),
+                conta.getTipo(),
+                conta.getTaxaManutencaoRendimento(),
+                tiposCartao
         );
     }
 
@@ -210,6 +268,4 @@ public class ContaService {
     
         contaRepository.delete(conta); // Deleta diretamente a conta
     }
-    
-
 }

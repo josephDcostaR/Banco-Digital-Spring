@@ -21,6 +21,8 @@ import com.br.cbd.BancoDigitalJPA.model.entity.conta.Conta;
 import com.br.cbd.BancoDigitalJPA.model.entity.conta.TipoConta;
 import com.br.cbd.BancoDigitalJPA.services.ClienteService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/cliente")
 public class clienteController {
@@ -30,7 +32,7 @@ public class clienteController {
     private ClienteService clienteService;
 
     @PostMapping("/add")
-    public ResponseEntity<String> addCliente(@RequestBody DadosCliente dadosCliente) {
+    public ResponseEntity<String> addCliente(@RequestBody @Valid DadosCliente dadosCliente) {
         Cliente clienteAdicionado = clienteService.salvarCliente(dadosCliente);
 
         if (clienteAdicionado != null) {
@@ -70,7 +72,7 @@ public class clienteController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Cliente> updateCliente(@PathVariable Long id, @RequestBody DadosCliente clienteNovo) {
+    public ResponseEntity<Cliente> updateCliente(@Valid @PathVariable Long id, @RequestBody DadosCliente clienteNovo) {
         try {
             Cliente clienteAtualizado = clienteService.updateCliente(id, clienteNovo);
             return new ResponseEntity<>(clienteAtualizado, HttpStatus.OK);

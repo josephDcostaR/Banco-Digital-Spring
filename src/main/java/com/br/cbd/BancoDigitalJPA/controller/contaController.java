@@ -15,9 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.br.cbd.BancoDigitalJPA.model.entity.conta.Conta;
 import com.br.cbd.BancoDigitalJPA.model.entity.conta.DadosConta;
 import com.br.cbd.BancoDigitalJPA.services.ContaService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/conta")
@@ -26,17 +27,18 @@ public class contaController {
     @Autowired
     private ContaService contaService;
 
-    @PostMapping("/add")
-     public ResponseEntity<String> addConta(@RequestBody DadosConta dadosConta) {
-        Conta contaAdicionado = contaService.salvarConta(dadosConta);
-
-        if (contaAdicionado != null) {
-            return new ResponseEntity<>("Conta cadastrada!",
-                    HttpStatus.CREATED);
-        } else {
-            return new ResponseEntity<>("Erro no cadastro!", HttpStatus.NOT_ACCEPTABLE);
-        }
+   @PostMapping("/corrente")
+    public ResponseEntity<String> cadastraContaCorrente(@RequestBody @Valid DadosConta dadosConta) {
+        contaService.salvarContaCorrente(dadosConta);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Conta Corrente Cadastrado!");
     }
+
+    @PostMapping("/poupanca")
+    public ResponseEntity<String> cadastraContaPoupanca(@RequestBody @Valid DadosConta dadosConta) {
+        contaService.salvarContaPoupanca(dadosConta);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Conta Poupança Cadastrado!");
+    }
+
 
     @GetMapping("/listar")
     public ResponseEntity<List<DadosConta>> listarContas() {
@@ -49,31 +51,31 @@ public class contaController {
     }
 
     @PostMapping("/pix")
-    public ResponseEntity<String> pagamentoViaPix(@RequestParam Long origem, @RequestParam Long destino, @RequestParam BigDecimal valor) {
+    public ResponseEntity<String> pagamentoViaPix(@RequestParam  @Valid Long origem, @RequestParam Long destino, @RequestParam BigDecimal valor) {
         contaService.pagamentoViaPix(origem, destino, valor);
         return ResponseEntity.ok("Transferência via Pix realizada com sucesso!");
     }
 
     @PostMapping("/{id}/deposito")
-    public ResponseEntity<String> deposito(@PathVariable Long id, @RequestParam BigDecimal valor) throws IllegalAccessException {
+    public ResponseEntity<String> deposito(@PathVariable @Valid Long id, @RequestParam BigDecimal valor) throws IllegalAccessException {
         contaService.deposito(id, valor);
         return ResponseEntity.ok("Depósito realizado com sucesso!");
     }
 
     @PostMapping("/{id}/saque")
-    public ResponseEntity<String> saque(@PathVariable Long id, @RequestParam BigDecimal valor) {
+    public ResponseEntity<String> saque(@PathVariable @Valid Long id, @RequestParam BigDecimal valor) {
         contaService.saque(id, valor);
         return ResponseEntity.ok("Saque realizado com sucesso!");
     }
 
     @PostMapping("/{id}/taxa-manutencao") //Conta Corrente
-    public ResponseEntity<String> aplicarTaxaManutencao(@PathVariable Long id) {
+    public ResponseEntity<String> aplicarTaxaManutencao(@PathVariable @Valid Long id) {
         contaService.aplicarTaxaManutencao(id);
         return ResponseEntity.ok("Taxa de manutenção aplicada!");
     }
 
     @PostMapping("/{id}/rendimento") //Conta Poupança
-    public ResponseEntity<String> aplicarRendimento(@PathVariable Long id) {
+    public ResponseEntity<String> aplicarRendimento(@PathVariable @Valid Long id) {
         contaService.aplicarRendimento(id);
         return ResponseEntity.ok("Rendimento aplicado!");
     }
