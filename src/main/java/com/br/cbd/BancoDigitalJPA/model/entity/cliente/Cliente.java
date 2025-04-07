@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDate;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

@@ -50,8 +50,8 @@ public class contaController {
         return ResponseEntity.ok(contaService.getSaldo(id));
     }
 
-    @PostMapping("/pix")
-    public ResponseEntity<String> pagamentoViaPix(@RequestParam  @Valid Long origem, @RequestParam Long destino, @RequestParam BigDecimal valor) {
+    @PostMapping("/transferencia")
+    public ResponseEntity<String> transferencia(@RequestParam  @Valid Long origem, @RequestParam Long destino, @RequestParam BigDecimal valor) {
         contaService.pagamentoViaPix(origem, destino, valor);
         return ResponseEntity.ok("Transferência via Pix realizada com sucesso!");
     }
@@ -81,12 +81,12 @@ public class contaController {
     }
 
 
-    @GetMapping("/{id}")
+    @GetMapping("/buscar/{id}")
     public ResponseEntity<DadosConta> obterConta(@PathVariable Long id) {
         return ResponseEntity.ok(contaService.getByIdConta(id));
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/del/{id}")
     public ResponseEntity<String> deletarConta(@PathVariable Long id) {
         contaService.deleteConta(id);
         return ResponseEntity.ok("Conta excluída com sucesso!");

@@ -39,7 +39,7 @@ public class SeguroController {
     }
 
     @GetMapping("/ativos")
-    public ResponseEntity<List<DadosSeguro>> retornaTodosSeguros() {
+    public ResponseEntity<List<DadosSeguro>> listarSeguros() {
         List<DadosSeguro> seguros = seguroService.retornaTodosSeguros();
         return ResponseEntity.ok(seguros);
     }

@@ -4,10 +4,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import com.br.cbd.BancoDigitalJPA.model.entity.seguro.DadosSeguro;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 
 public record DadosCartao(
     Long id, // Opcional, sem validação explícita

@@ -1,9 +1,6 @@
 package com.br.cbd.BancoDigitalJPA.services;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +9,6 @@ import com.br.cbd.BancoDigitalJPA.model.entity.cliente.Cliente;
 import com.br.cbd.BancoDigitalJPA.model.entity.cliente.DadosCliente;
 import com.br.cbd.BancoDigitalJPA.model.entity.conta.TipoConta;
 import com.br.cbd.BancoDigitalJPA.model.entity.conta.Conta;
-import com.br.cbd.BancoDigitalJPA.model.entity.conta.DadosConta;
 import com.br.cbd.BancoDigitalJPA.repository.ClienteRepository;
 import com.br.cbd.BancoDigitalJPA.repository.ContaRepository;
 
@@ -73,6 +69,7 @@ public class ClienteService {
 
      // Retorna um cliente pelo ID
      public Cliente getByIdCliente(Long id) {
+        
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado!"));
     }

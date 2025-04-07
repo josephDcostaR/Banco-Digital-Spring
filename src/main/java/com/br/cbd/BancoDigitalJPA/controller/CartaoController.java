@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.br.cbd.BancoDigitalJPA.model.entity.cartao.DadosCartao;
+import com.br.cbd.BancoDigitalJPA.model.entity.cartao.PagamentoRequest;
 import com.br.cbd.BancoDigitalJPA.services.CartaoService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -40,16 +41,23 @@ public class CartaoController {
     
 
     @GetMapping("/{id}")
-    public ResponseEntity<DadosCartao> getCartaoById(@PathVariable Long id) {
+    public ResponseEntity<DadosCartao> buscarCartaoById(@PathVariable Long id) {
         DadosCartao cartao = cartaoService.getByIdCartao(id);
         return ResponseEntity.ok(cartao);
     }
 
-    @PostMapping("/{id}/pagamento")
-    public ResponseEntity<String> realizarPagamento(@PathVariable @Valid Long id, @RequestBody BigDecimal valor) {
-        cartaoService.pagamento(id, valor);
-        return ResponseEntity.ok("Pagamento realizado com sucesso!");
+    @PostMapping("/{id}/pagamento/debito")
+    public ResponseEntity<String> pagamentoDebito(@PathVariable Long id, @RequestBody @Valid PagamentoRequest request) {
+        cartaoService.pagamentoDebito(id, request.valor());
+        return ResponseEntity.ok("Pagamento com débito realizado com sucesso!");
     }
+
+    @PostMapping("/{id}/pagamento/credito")
+    public ResponseEntity<String> pagamentoCredito(@PathVariable Long id, @RequestBody @Valid PagamentoRequest request) {
+        cartaoService.pagamentoCredito(id, request.valor());
+        return ResponseEntity.ok("Pagamento com crédito realizado com sucesso!");
+    }
+
 
     @PutMapping("/{id}/limite")
     public ResponseEntity<String> alterarLimite(@PathVariable @Valid Long id, @RequestBody BigDecimal novoLimite) {

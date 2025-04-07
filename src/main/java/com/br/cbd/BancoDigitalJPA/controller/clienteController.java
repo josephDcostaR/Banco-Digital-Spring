@@ -1,7 +1,6 @@
 package com.br.cbd.BancoDigitalJPA.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,12 +26,11 @@ import jakarta.validation.Valid;
 @RequestMapping("/cliente")
 public class clienteController {
 
-
     @Autowired
     private ClienteService clienteService;
 
     @PostMapping("/add")
-    public ResponseEntity<String> addCliente(@RequestBody @Valid DadosCliente dadosCliente) {
+    public ResponseEntity<String> cadastrarCliente(@RequestBody @Valid DadosCliente dadosCliente) {
         Cliente clienteAdicionado = clienteService.salvarCliente(dadosCliente);
 
         if (clienteAdicionado != null) {
@@ -44,13 +42,13 @@ public class clienteController {
     }
 
     @GetMapping("/listAll")
-    public ResponseEntity<List<DadosCliente>> getAllClientes() {
+    public ResponseEntity<List<DadosCliente>> retornarTodosClientes() {
         List<DadosCliente> clientes = clienteService.getClientes();
         return new ResponseEntity<>(clientes, HttpStatus.OK);
     }
 
-    @GetMapping("/find/{id}")
-    public ResponseEntity<DadosCliente> findCliente(@PathVariable Long id) {
+    @GetMapping("/buscar/{id}")
+    public ResponseEntity<DadosCliente> encontrarClienteById(@PathVariable Long id) {
        Cliente clienteEncontrado = clienteService.getByIdCliente(id);
 
        List<TipoConta> tipoContas = clienteEncontrado.getContas()
@@ -72,7 +70,7 @@ public class clienteController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Cliente> updateCliente(@Valid @PathVariable Long id, @RequestBody DadosCliente clienteNovo) {
+    public ResponseEntity<Cliente> atualizarCliente(@Valid @PathVariable Long id, @RequestBody DadosCliente clienteNovo) {
         try {
             Cliente clienteAtualizado = clienteService.updateCliente(id, clienteNovo);
             return new ResponseEntity<>(clienteAtualizado, HttpStatus.OK);

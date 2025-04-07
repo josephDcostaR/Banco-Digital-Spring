@@ -29,49 +29,6 @@ public class CartaoService {
     @Autowired
     private ContaRepository contaRepository;
 
-
-    //Criar novo Cartao
-    // public Cartao salvarCartao(DadosCartao dadosCartao) {
-    //     //Verifica se existe uma conta 
-    //     Conta conta = contaRepository.findById(dadosCartao.conta())
-    //         .orElseThrow(() -> new EntityNotFoundException("Conta não encontrada!"));
-    //     // Verifica se a conta já possui o número máximo de cartões (por exemplo, 2)
-    //     if (conta.getCartoes() != null && conta.getCartoes().size() >= 2) {
-    //         throw new RuntimeException("A conta já possui o número máximo de cartões permitidos.");
-    //     }
-    //     Cartao cartao = new Cartao();
-    //     cartao.setConta(conta);
-    //     cartao.setNumeroCartao(dadosCartao.numeroCartao());
-    //     cartao.setSenha(dadosCartao.senha());
-    //     cartao.setTipoCartao(dadosCartao.tipoCartao());
-    //     cartao.setAtivo(true); 
-    //     if (dadosCartao.tipoCartao() == TipoCartao.CREDITO) {
-    //         // Definir limite com base na categoria do cliente
-    //         BigDecimal limite;
-    //         switch (conta.getCliente().getCategoria()) {
-    //             case COMUM:
-    //                 limite = new BigDecimal("1000.00");
-    //                 break;
-    //             case SUPER:
-    //                 limite = new BigDecimal("5000.00");
-    //                 break;
-    //             case PREMIUM:
-    //                 limite = new BigDecimal("10000.00");
-    //                 break;
-    //             default:
-    //                 throw new IllegalArgumentException("Categoria de cliente inválida.");
-    //         }
-    //         cartao.setLimite(limite);
-    //     } else if (dadosCartao.tipoCartao() == TipoCartao.DEBITO) {
-    //         // O limite do débito será o saldo da conta
-    //         cartao.setLimite(conta.getSaldo());
-    //     } else {
-    //         throw new IllegalArgumentException("Tipo de cartão inválido.");
-    //     }
-    //     return cartaoRepository.save(cartao);
-    // }
-
-
     public Cartao salvarCartaoCredito(DadosCartao dadosCartao) {
         Conta conta = buscaConta(dadosCartao.conta());
         validarMaximoCartoes(conta);
@@ -197,6 +154,44 @@ public class CartaoService {
 
         cartao.setFatura(faturaAtual.add(valor));
     }
+
+    public void pagamentoDebito(Long id, BigDecimal valor) {
+        Cartao cartao = buscarCartao(id);
+        validarCartao(cartao, TipoCartao.DEBITO);
+        
+        if (valor.compareTo(cartao.getConta().getSaldo()) > 0) {
+            throw new IllegalStateException("Saldo insuficiente para débito.");
+        }
+    
+        BigDecimal novoSaldo = cartao.getConta().getSaldo().subtract(valor);
+        cartao.getConta().setSaldo(novoSaldo);
+        cartaoRepository.save(cartao);
+    }
+    
+    public void pagamentoCredito(Long id, BigDecimal valor) {
+        Cartao cartao = buscarCartao(id);
+        validarCartao(cartao, TipoCartao.CREDITO);
+    
+        BigDecimal limiteDisponivel = cartao.getLimite().subtract(cartao.getFatura());
+        if (valor.compareTo(limiteDisponivel) > 0) {
+            throw new IllegalStateException("Limite de crédito excedido.");
+        }
+    
+        cartao.setFatura(cartao.getFatura().add(valor));
+        cartaoRepository.save(cartao);
+    }
+    
+
+    private Cartao buscarCartao(Long id) {
+        return cartaoRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Cartão não encontrado."));
+    }
+    
+    private void validarCartao(Cartao cartao, TipoCartao tipoEsperado) {
+        if (!cartao.isAtivo()) throw new IllegalStateException("Cartão inativo.");
+        if (cartao.getTipoCartao() != tipoEsperado) throw new IllegalArgumentException("Tipo de cartão inválido.");
+    }
+    
 
 
     //Alterar limite do cartão
