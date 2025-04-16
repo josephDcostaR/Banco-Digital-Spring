@@ -22,12 +22,14 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class CartaoService {
+    private final CartaoRepository cartaoRepository;
+    private final ContaRepository contaRepository;
 
-    @Autowired
-    private CartaoRepository cartaoRepository;
-
-    @Autowired
-    private ContaRepository contaRepository;
+    @Autowired 
+    public CartaoService(CartaoRepository cartaoRepository,  ContaRepository contaRepository) {
+        this.cartaoRepository = cartaoRepository;
+        this.contaRepository = contaRepository;
+    }
 
     public Cartao salvarCartaoCredito(DadosCartao dadosCartao) {
         Conta conta = buscaConta(dadosCartao.conta());

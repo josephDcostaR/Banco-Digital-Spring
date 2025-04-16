@@ -17,13 +17,14 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class SeguroService {
+    private final SeguroRepository seguroRepository;
+    private final CartaoRepository cartaoRepository;
 
     @Autowired
-    private SeguroRepository seguroRepository;
-
-    @Autowired
-    private CartaoRepository cartaoRepository;
-
+    public SeguroService(SeguroRepository seguroRepository,  CartaoRepository cartaoRepository) {
+        this.seguroRepository = seguroRepository;
+        this.cartaoRepository = cartaoRepository;
+    }
 
     //Contratar um seguro
     public Seguro salvarSeguro(DadosSeguro dadosSeguro) {
@@ -87,7 +88,6 @@ public class SeguroService {
             seguro.isAtivo()
         ))
         .collect(Collectors.toList());
-
     }
 
 

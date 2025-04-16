@@ -19,7 +19,7 @@ public record DadosCliente(
     String nome,
 
     @NotBlank(message = "O CPF é obrigatório")
-    @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}\\-\\d{2}", message = "O CPF deve estar no formato XXX.XXX.XXX-XX")
+    // @Pattern(regexp = "\\d{3}\\.\\d{3}\\.\\d{3}\\-\\d{2}", message = "O CPF deve estar no formato XXX.XXX.XXX-XX")
     String cpf,
 
     @NotNull(message = "A data de nascimento é obrigatoria")

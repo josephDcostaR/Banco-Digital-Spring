@@ -5,6 +5,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.br.cbd.BancoDigitalJPA.external.CpfApiClient;
 import com.br.cbd.BancoDigitalJPA.model.entity.cliente.Cliente;
 import com.br.cbd.BancoDigitalJPA.model.entity.cliente.DadosCliente;
 import com.br.cbd.BancoDigitalJPA.model.entity.conta.TipoConta;
@@ -17,15 +19,27 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class ClienteService {
+    private final ClienteRepository clienteRepository;
+    private final ContaRepository contaRepository;
+    private final CpfApiClient cpfApiClient;
 
     @Autowired
-    private ClienteRepository clienteRepository;
-
-    @Autowired
-    private ContaRepository contaRepository;
+    public ClienteService(ClienteRepository clienteRepository,ContaRepository contaRepository,  CpfApiClient cpfApiClient) {
+        this.clienteRepository = clienteRepository;
+        this.contaRepository = contaRepository;
+        this.cpfApiClient = cpfApiClient;
+    }
 
      // Cadastra cliente
      public Cliente salvarCliente(DadosCliente dadosCliente) {
+        try {
+            if (!cpfApiClient.validateCpf(dadosCliente.cpf())) {
+                throw new IllegalArgumentException("CPF inválido ou não regular");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao validar CPF: " + e.getMessage());
+        }
+
         if (clienteRepository.existsByCpf(dadosCliente.cpf())) {
             throw new RuntimeException("Já existe um cliente cadastrado com este CPF!");
         }
@@ -68,8 +82,7 @@ public class ClienteService {
 
 
      // Retorna um cliente pelo ID
-     public Cliente getByIdCliente(Long id) {
-        
+     public Cliente getByIdCliente(Long id) {     
         return clienteRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado!"));
     }

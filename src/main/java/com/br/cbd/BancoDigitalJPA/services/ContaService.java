@@ -21,36 +21,15 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class ContaService {
+    private final ContaRepository contaRepository;
+    private final ClienteRepository clienteRepository;
 
     @Autowired
-    private ContaRepository contaRepository;
+    public ContaService(ContaRepository contaRepository,ClienteRepository clienteRepository){
+        this.contaRepository = contaRepository;
+        this.clienteRepository = clienteRepository;
 
-    @Autowired
-    private ClienteRepository clienteRepository;
-
-    //Cria nova conta
-    // public Conta salvarConta(DadosConta dadosConta) {
-    //     //Verifica se o cliente existe no banco
-    //     Cliente cliente = clienteRepository.findById(dadosConta.cliente())
-    //         .orElseThrow(() -> new EntityNotFoundException("Cliente não encontrado!"));
-    //     Conta conta = new Conta();
-    //     conta.setCliente(cliente);
-    //     conta.setCodigo(dadosConta.codigo());
-    //     conta.setSaldo(dadosConta.saldo());
-    //     conta.setAtiva(true);
-    //     conta.setTipo(dadosConta.tipo());
-    //     if (dadosConta.tipo() == TipoConta.CORRENTE) {
-    //         BigDecimal taxaManutencao = getTaxaManutencao(cliente);
-    //         conta.setTaxaManutencaoRendimento(taxaManutencao);
-    //     } else if (dadosConta.tipo() == TipoConta.POUPANCA) {
-    //         BigDecimal taxaRendimento = getTaxaRendimento(cliente);
-    //         conta.setTaxaManutencaoRendimento(taxaRendimento);
-    //     }else {
-    //         throw new IllegalArgumentException("Tipo de conta inválido");
-    //     }
-    //     return contaRepository.save(conta);   
-    // }
-
+    }
    
 
     public Conta salvarContaCorrente(DadosConta dadosConta) {
@@ -62,7 +41,6 @@ public class ContaService {
         conta.setSaldo(dadosConta.saldo());
         conta.setAtiva(true);
         conta.setTipo(TipoConta.CORRENTE);
-
         conta.setTaxaManutencaoRendimento(getTaxaManutencao(cliente));
 
         return contaRepository.save(conta);
@@ -77,7 +55,6 @@ public class ContaService {
         conta.setSaldo(dadosConta.saldo());
         conta.setAtiva(true);
         conta.setTipo(TipoConta.POUPANCA);
-
         conta.setTaxaManutencaoRendimento(getTaxaRendimento(cliente));
 
         return contaRepository.save(conta);
@@ -228,9 +205,7 @@ public class ContaService {
         }
 
         BigDecimal taxaRendimento = getTaxaRendimento(conta.getCliente());
-
         BigDecimal rendimento = conta.getSaldo().multiply(taxaRendimento);
-
         conta.setSaldo(conta.getSaldo().add(rendimento));
 
         contaRepository.save(conta);
